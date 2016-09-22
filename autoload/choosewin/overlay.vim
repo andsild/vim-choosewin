@@ -151,6 +151,7 @@ endfunction
 
 function! s:Overlay.setup_buffer() "{{{1
   for bufnr in self.bufs
+
     noautocmd execute bufwinnr(bufnr) 'wincmd w'
 
     execute 'wundo' b:choosewin.undofile
@@ -159,10 +160,14 @@ function! s:Overlay.setup_buffer() "{{{1
 
     let render_lines = s:_.uniq(b:choosewin.render_lines)
     let append       = max([max(render_lines) - line('$'), 0 ])
-    call append(line('$'), map(range(append), '""'))
-    call self._fill_space(
-          \ render_lines,
-          \ max(b:choosewin.font_width), max(b:choosewin.winwidth),  max(b:choosewin.offset))
+
+    if bufname(bufnr) =~# 'term://'
+        continue
+    endif
+        call append(line('$'), map(range(append), '""'))
+        call self._fill_space(
+            \ render_lines,
+            \ max(b:choosewin.font_width), max(b:choosewin.winwidth),  max(b:choosewin.offset))
   endfor
   noautocmd execute self.winnr_org 'wincmd w'
 endfunction
@@ -184,6 +189,9 @@ endfunction
 function! s:Overlay.label_show() "{{{1
   for winnr in self.wins
     noautocmd execute winnr 'wincmd w'
+    if bufname(bufnr(bufwinnr(winnr))) =~# 'term://'
+        continue
+    endif
 
     " Shade overall window
     if self.conf['overlay_shade']
@@ -196,9 +204,9 @@ function! s:Overlay.label_show() "{{{1
 
     " Show Label
     call self.matchadd(
-          \ "ChooseWinOverlay". ( winnr is self.winnr_org ? 'Current' : ''),
-          \ w:choosewin.pattern,
-          \ self.conf['overlay_label_priority'])
+           \ "ChooseWinOverlay". ( winnr is self.winnr_org ? 'Current' : ''),
+           \ w:choosewin.pattern,
+           \ self.conf['overlay_label_priority'])
   endfor
   noautocmd execute self.winnr_org 'wincmd w'
   redraw

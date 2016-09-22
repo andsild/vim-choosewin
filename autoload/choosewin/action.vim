@@ -32,6 +32,10 @@ function! s:goto_win(num, ...) "{{{1
     return
   endif
   silent execute a:num 'wincmd w'
+
+  if ! bufname('%') =~# 'term://'
+    stopinsert
+  endif
 endfunction
 "}}}
 
